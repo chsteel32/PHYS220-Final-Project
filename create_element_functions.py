@@ -4,7 +4,7 @@ It also accounts for the creation of the components which are added to the circu
 """
 # import packages
 from tkinter import *
-import tkinter_circuit_element_creator_and_drawer as cec
+import add_element_functions as cec
 
 # create a list of direction options to be used in the direction based drop down menu
 direction_options = ['Select Direction',

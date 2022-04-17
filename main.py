@@ -19,7 +19,7 @@ Elements to be added
 # import packages
 from tkinter import *
 from PIL import ImageTk, Image
-import tkinter_create_element_functions as ce
+import create_element_functions as ce
 import PySpice.Logging.Logging as Logging
 import matplotlib.pyplot as plt
 from PySpice.Spice.Netlist import Circuit
