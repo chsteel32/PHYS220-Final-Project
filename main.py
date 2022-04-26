@@ -42,6 +42,11 @@ def create_element(element, circuit):
         # circuit is the given circuit, circuit_model_frame is the location to show the circuit model
         ce.create_voltage_source(circuit, circuit_model_frame)
 
+    elif element == circuit_elements[2]:  # if element == 'AC Voltage Source' create an AC source
+
+        # circuit is the given circuit, circuit_model_frame is the location to show the circuit model
+        ce.create_ac_voltage_source(circuit, circuit_model_frame)
+
     elif element == circuit_elements[3]:  # if element == 'Resistor' create a resistor
 
         # circuit is the given circuit, circuit_model_frame is the location to show the circuit model
@@ -95,8 +100,7 @@ circuit_elements = ['Select Element',
                     'Resistor',
                     'Capacitor',
                     'Inductor',
-                    'Diode',
-                    'Switch']
+                    'Diode',]
 
 # create a tkinter variable to store the circuit element menu selection to be used when the create element button is
 # clicked
