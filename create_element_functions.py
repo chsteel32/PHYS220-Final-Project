@@ -22,9 +22,13 @@ ac_voltage_options = ['Select AC Voltage Type',
 diode_model_options = ['Select Diode Model',
                        '1N4148PH']
 
+output_circuit = cec.output_circuit
+
 
 # # A function used to create a voltage source for a given circuit and a given frame for displaying the circuit
 def create_voltage_source(circuit, frame):
+
+    global output_circuit
 
     # create the popout voltage creation window
     voltage_creator_window = Toplevel()
@@ -117,9 +121,13 @@ def create_voltage_source(circuit, frame):
     # insert text corresponding to the ground node as default for the second node
     first_node.insert(0, 'circuit.gnd')
 
+    output_circuit = cec.output_circuit
+
 
 # # A function used to create a voltage source for a given circuit and a given frame for displaying the circuit
 def create_ac_voltage_source(circuit, frame):
+
+    global output_circuit
 
     # create the popout voltage creation window
     ac_voltage_creator_window = Toplevel()
@@ -229,9 +237,13 @@ def create_ac_voltage_source(circuit, frame):
     # insert text corresponding to the ground node as default for the second node
     first_node.insert(0, 'circuit.gnd')
 
+    output_circuit = cec.output_circuit
+
 
 # # A function used to create a resistor for a given circuit and a given frame for displaying the circuit
 def create_resistor(circuit, frame):
+
+    global output_circuit
 
     # create the popout resistor creation window
     resistor_creator_window = Toplevel()
@@ -324,9 +336,13 @@ def create_resistor(circuit, frame):
     # insert text corresponding to the ground node as default for the second node
     first_node.insert(0, 'circuit.gnd')
 
+    output_circuit = cec.output_circuit
+
 
 # # A function used to create a capacitor for a given circuit and a given frame for displaying the circuit
 def create_capacitor(circuit, frame):
+
+    global output_circuit
 
     # create the popout capacitor creation window
     capacitor_creator_window = Toplevel()
@@ -419,9 +435,13 @@ def create_capacitor(circuit, frame):
     # insert text corresponding to the ground node as default for the second node
     first_node.insert(0, 'circuit.gnd')
 
+    output_circuit = cec.output_circuit
+
 
 # # A function used to create an inductor for a given circuit and a given frame for displaying the circuit
 def create_inductor(circuit, frame):
+
+    global output_circuit
 
     # create the popout inductor creation window
     inductor_creator_window = Toplevel()
@@ -514,9 +534,13 @@ def create_inductor(circuit, frame):
     # insert text corresponding to the ground node as default for the second node
     first_node.insert(0, 'circuit.gnd')
 
+    output_circuit = cec.output_circuit
+
 
 # # A function used to create a diode for a given circuit and a given frame for displaying the circuit
 def create_diode(circuit, frame):
+
+    global output_circuit
 
     # create a diode model variable to correspond to the diode model selected
     diode_model = StringVar()
@@ -592,3 +616,5 @@ def create_diode(circuit, frame):
     creation_button.grid(column=1, row=5, padx=10, pady=10)
     # insert text corresponding to the ground node as default for the second node
     first_node.insert(0, 'circuit.gnd')
+
+    output_circuit = cec.output_circuit
