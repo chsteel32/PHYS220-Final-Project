@@ -18,6 +18,8 @@ d = schemdraw.Drawing(file='circuit.png')
 # create a dictionary of circuit nodes to be used in creating the circuit diagram
 circuit_nodes = {}
 
+output_circuit = None
+
 
 # # A function to show the circuit model: requires the circuit_model_frame as an argument
 def show_circuit(frame):
@@ -80,10 +82,16 @@ def node_add(node):
 # # tkinter_create_element_functions)
 def add_voltage_source(voltage_name, voltage_value, first_node, second_node, circuit, direction, frame):
 
+    global output_circuit
+
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    if second_node == 'circuit.gnd':
 
         circuit.V(voltage_name, first_node, circuit.gnd, float(voltage_value)@u_V)
+
+    elif first_node == 'circuit.gnd':
+
+        circuit.V(voltage_name, circuit.gnd, second_node, float(voltage_value) @ u_V)
 
     # otherwise, add the element with whatever user input values were received for both nodes
     else:
@@ -131,6 +139,8 @@ def add_voltage_source(voltage_name, voltage_value, first_node, second_node, cir
     # run the function show_circuit() to display the circuit model in the circuit model frame
     show_circuit(frame)
 
+    output_circuit = circuit
+
     return circuit
 
 
@@ -138,27 +148,37 @@ def add_voltage_source(voltage_name, voltage_value, first_node, second_node, cir
 # # tkinter_create_element_functions)
 def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequency, first_node, second_node, circuit, direction, frame):
 
+    global output_circuit
+
     if ac_type == 'Sinusoidal Voltage':
 
         # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-        if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+        if second_node == 'circuit.gnd':
 
-            circuit.SinusoidalVoltageSource(voltage_name, first_node, circuit.gnd, amplitude=float(voltage_value)@u_V, frequency=voltage_frequency)
+            circuit.SinusoidalVoltageSource(voltage_name, first_node, circuit.gnd, amplitude=float(voltage_value)@u_V, frequency=float(voltage_frequency)@u_Hz)
+
+        elif first_node == 'circuit.gnd':
+
+            circuit.SinusoidalVoltageSource(voltage_name, circuit.gnd, second_node, amplitude=float(voltage_value)@u_V, frequency=float(voltage_frequency)@u_Hz)
 
         # otherwise, add the element with whatever user input values were received for both nodes
         else:
 
-            circuit.SinusoidalVoltageSource(voltage_name, first_node, second_node, amplitude=float(voltage_value)@u_V, frequency=voltage_frequency)
+            circuit.SinusoidalVoltageSource(voltage_name, first_node, second_node, amplitude=float(voltage_value)@u_V, frequency=float(voltage_frequency)@u_Hz)
 
     elif ac_type == 'Step Voltage':
 
-        time_volt_vals = [(0, float(voltage_value)@u_V), (1 / (2 * float(voltage_frequency))@u_s, 0),
-                          (1/float(voltage_frequency)@u_s, float(voltage_value)@u_V)]
+        time_volt_vals = [(0, float(voltage_value)@u_V), (1 / (2 * float(voltage_frequency))@u_s, float(voltage_value)@u_V),
+                          ((1+0.0000001) / (2 * float(voltage_frequency))@u_s, 0), (1/float(voltage_frequency)@u_s, 0)]
 
         # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-        if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+        if second_node == 'circuit.gnd':
 
-            circuit.PieceWiseLinearVoltageSource(voltage_name, first_node, circuit.gnd, time_volt_vals)
+            circuit.PieceWiseLinearVoltageSource(voltage_name, first_node, circuit.gnd, time_volt_vals, dc=float(voltage_value)@u_V)
+
+        elif first_node == 'circuit.gnd':
+
+            circuit.PieceWiseLinearVoltageSource(voltage_name, circuit.gnd, second_node, time_volt_vals, dc=float(voltage_value)@u_V)
 
         # otherwise, add the element with whatever user input values were received for both nodes
         else:
@@ -202,9 +222,10 @@ def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequenc
         d.add(elm.Wire('|-').at(end_element).to(second_node_location))
 
     d.save('circuit.png')
-
     # run the function show_circuit() to display the circuit model in the circuit model frame
     show_circuit(frame)
+
+    output_circuit = circuit
 
     return circuit
 
@@ -213,10 +234,16 @@ def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequenc
 # # tkinter_create_element_functions)
 def add_resistor(resistor_name, resistor_value, first_node, second_node, circuit, direction, frame):
 
+    global output_circuit
+
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    if second_node == 'circuit.gnd':
 
         circuit.R(resistor_name, first_node, circuit.gnd, float(resistor_value)@u_kOhm)
+
+    elif first_node == 'circuit.gnd':
+
+        circuit.R(resistor_name, circuit.gnd, second_node, float(resistor_value)@u_kOhm)
 
     # otherwise, add the element with whatever user input values were received for both nodes
     else:
@@ -264,6 +291,8 @@ def add_resistor(resistor_name, resistor_value, first_node, second_node, circuit
     # run the function show_circuit() to display the circuit model in the circuit model frame
     show_circuit(frame)
 
+    output_circuit = circuit
+
     return circuit
 
 
@@ -271,9 +300,15 @@ def add_resistor(resistor_name, resistor_value, first_node, second_node, circuit
 # # tkinter_create_element_functions)
 def add_capacitor(capacitor_name, capacitor_value, first_node, second_node, circuit, direction, frame):
 
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    global output_circuit
+
+    if second_node == 'circuit.gnd':
 
         circuit.C(capacitor_name, first_node, circuit.gnd, float(capacitor_value)@u_uF)
+
+    elif first_node == 'circuit.gnd':
+
+        circuit.C(capacitor_name, circuit.gnd, second_node, float(capacitor_value)@u_uF)
 
     else:
 
@@ -323,6 +358,8 @@ def add_capacitor(capacitor_name, capacitor_value, first_node, second_node, circ
     # run the function show_circuit() to display the circuit model in the circuit model frame
     show_circuit(frame)
 
+    output_circuit = circuit
+
     return circuit
 
 
@@ -330,10 +367,16 @@ def add_capacitor(capacitor_name, capacitor_value, first_node, second_node, circ
 # # tkinter_create_element_functions)
 def add_inductor(inductor_name, inductor_value, first_node, second_node, circuit, direction, frame):
 
+    global output_circuit
+
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    if second_node == 'circuit.gnd':
 
         circuit.L(inductor_name, first_node, circuit.gnd, float(inductor_value)@u_H)
+
+    elif first_node == 'circuit.gnd':
+
+        circuit.L(inductor_name, circuit.gnd, second_node, float(inductor_value)@u_H)
 
     # otherwise, add the element with whatever user input values were received for both nodes
     else:
@@ -384,6 +427,8 @@ def add_inductor(inductor_name, inductor_value, first_node, second_node, circuit
     # run the function show_circuit() to display the circuit model in the circuit model frame
     show_circuit(frame)
 
+    output_circuit = circuit
+
     return circuit
 
 
@@ -391,10 +436,16 @@ def add_inductor(inductor_name, inductor_value, first_node, second_node, circuit
 # # tkinter_create_element_functions)
 def add_diode(diode_name, diode_model, first_node, second_node, circuit, direction, frame):
 
+    global output_circuit
+
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    if second_node == 'circuit.gnd':
 
         circuit.Diode(diode_name, first_node, circuit.gnd, model=diode_model)
+
+    elif first_node == 'circuit.gnd':
+
+        circuit.Diode(diode_name, circuit.gnd, second_node, model=diode_model)
 
     # otherwise, add the element with whatever user input values were received for both nodes
     else:
@@ -440,3 +491,5 @@ def add_diode(diode_name, diode_model, first_node, second_node, circuit, directi
 
     # run the function show_circuit() to display the circuit model in the circuit model frame
     show_circuit(frame)
+
+    output_circuit = circuit
