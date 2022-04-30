@@ -114,8 +114,8 @@ def create_voltage_source(circuit, frame):
     # tkinter_circuit_element_creator_and_drawer file feeding in the proper values input into the element creation
     # window. The creation window is also terminated when the button is pressed
     creation_button = Button(voltage_creator_window, text='Create Element', command=lambda:
-                             [cec.add_voltage_source(voltage_name.get(), voltage_value.get(), first_node.get(),
-                                                     second_node.get(), circuit, direction_chosen.get(), frame),
+                             [cec.add_voltage_source(voltage_name.get(), voltage_value.get(), second_node.get(),
+                                                     first_node.get(), circuit, direction_chosen.get(), frame),
                               voltage_creator_window.destroy()], state=DISABLED)
     creation_button.grid(column=1, row=5, padx=10, pady=10)
     # insert text corresponding to the ground node as default for the second node
@@ -231,7 +231,7 @@ def create_ac_voltage_source(circuit, frame):
     # window. The creation window is also terminated when the button is pressed
     creation_button = Button(ac_voltage_creator_window, text='Create Element', command=lambda:
                              [cec.add_ac_voltage_source(voltage_name.get(), source_type_chosen.get(), voltage_value.get(), voltage_frequency.get(),
-                                                        first_node.get(), second_node.get(), circuit, direction_chosen.get(), frame),
+                                                        second_node.get(), first_node.get(), circuit, direction_chosen.get(), frame),
                               ac_voltage_creator_window.destroy()], state=DISABLED)
     creation_button.grid(column=1, row=8, padx=10, pady=10)
     # insert text corresponding to the ground node as default for the second node
