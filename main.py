@@ -90,13 +90,19 @@ def create_simulator(simulator, circuit):
 
 def reset():
     global start_circuit
+
     try:
         os.remove("circuit.png")
+        print('-----------------')
+        
         ae.reset_circuit(circuit_model_frame)
         del start_circuit
         start_circuit = Circuit('COMPHYSPICE CIRCUIT')
+        del ce.output_circuit
+        ce.output_circuit = ae.output_circuit
         print(start_circuit)
-        print(ce.output_circuit)
+        
+        print('-----------------')
     except FileNotFoundError:
         pass
     return 

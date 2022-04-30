@@ -23,11 +23,22 @@ circuit_nodes = {}
 output_circuit = None
 
 def reset_circuit(frame):
-    global output_circuit
+    global output_circuit, circuit_nodes, d
+    del d
+    del circuit_nodes
+    del output_circuit
+
+    # A drawing on which to place the circuit elements for the circuit model
+    d = schemdraw.Drawing(file='circuit.png')
+
+    # create a dictionary of circuit nodes to be used in creating the circuit diagram
+    circuit_nodes = {}
+
     output_circuit = None
+
+
     for widget in frame.winfo_children():
         widget.destroy()
-    circuit_nodes = {}
 
 # # A function to show the circuit model: requires the circuit_model_frame as an argument
 def show_circuit(frame):
