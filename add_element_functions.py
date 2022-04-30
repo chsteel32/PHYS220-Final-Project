@@ -22,6 +22,12 @@ circuit_nodes = {}
 
 output_circuit = None
 
+def reset_circuit(frame):
+    global output_circuit
+    output_circuit = None
+    for widget in frame.winfo_children():
+        widget.destroy()
+    circuit_nodes = {}
 
 # # A function to show the circuit model: requires the circuit_model_frame as an argument
 def show_circuit(frame):

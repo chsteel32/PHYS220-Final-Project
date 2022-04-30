@@ -20,12 +20,15 @@ Elements to be added
 from tkinter import *
 from PIL import ImageTk, Image
 import create_element_functions as ce
+import add_element_functions as ae
 import simulator_functions as sf
 import simulator_creators as sc
 import PySpice.Logging.Logging as Logging
 import matplotlib.pyplot as plt
 from PySpice.Spice.Netlist import Circuit
 from PySpice.Unit import *
+
+import os
 
 start_circuit = Circuit('COMPHYSPICE CIRCUIT')
 
@@ -85,6 +88,18 @@ def create_simulator(simulator, circuit):
 
         sc.create_transient_simulator(circuit)
 
+def reset():
+    global start_circuit
+    try:
+        os.remove("circuit.png")
+        ae.reset_circuit(circuit_model_frame)
+        del start_circuit
+        start_circuit = Circuit('COMPHYSPICE CIRCUIT')
+        print(start_circuit)
+        print(ce.output_circuit)
+    except FileNotFoundError:
+        pass
+    return 
 
 ########################################################################################################################
 # #                                                  MAIN PROCESSES                                                  # #
@@ -151,6 +166,9 @@ Button(menu_frame, text='Create Element', command=lambda: [create_element(select
 
 Button(menu_frame, text='Run Simulation', command=lambda: [create_simulator(selected_simulator.get(), ce.output_circuit)]).grid(
     column=1, row=1, padx=10, pady=10)
+
+Button(menu_frame, text='Reset', command=lambda: [reset()]).grid(
+    column=2, row=1, padx=10, pady=10)
 
 # run the main loop of the root window
 root.mainloop()
