@@ -2,17 +2,22 @@ import PySpice.Logging.Logging as Logging
 import matplotlib.pyplot as plt
 from PySpice.Spice.Netlist import Circuit
 from PySpice.Unit import *
+import os
+
+# os.environ['path'] += os.pathsep + r"D:\\Users\\chste\\Downloads\\ngspice-36_dll_64\\Spice64_dll\\dll-vs"
 
 
-def transient_simulator(circuit, start_time, step_time, end_time, analyzed_nodes):
+def transient_simulator(circuit, start_time, step_time, end_time, analyzed_nodes, initial_conditions):
 
     print(circuit)
 
     simulator = circuit.simulator(temperature=25, nominal_temperature=25)
 
-    ic = 5@u_V
+    for current_node in initial_conditions:
 
-    simulator.initial_condition(n2=ic)
+        ic = initial_conditions[current_node]
+
+        circuit.raw_spice = '.ic v({})={}'.format(current_node, ic)
 
     analysis = simulator.transient(start_time=float(start_time)@u_s, step_time=float(step_time)@u_us, end_time=float(end_time)@u_s)
 
