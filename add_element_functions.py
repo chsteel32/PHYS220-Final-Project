@@ -12,6 +12,8 @@ import PySpice.Logging.Logging as Logging
 from PySpice.Spice.Netlist import Circuit, SubCircuit
 from PySpice.Unit import *
 
+circuit_ground_options = ['circuit.gnd', 'ground', 'g', 'gr', '0']
+
 # A drawing on which to place the circuit elements for the circuit model
 d = schemdraw.Drawing(file='circuit.png')
 
@@ -85,11 +87,11 @@ def add_voltage_source(voltage_name, voltage_value, first_node, second_node, cir
     global output_circuit
 
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd':
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.V(voltage_name, first_node, circuit.gnd, float(voltage_value)@u_V)
 
-    elif first_node == 'circuit.gnd':
+    elif str(first_node).lower() in circuit_ground_options:
 
         circuit.V(voltage_name, circuit.gnd, second_node, float(voltage_value) @ u_V)
 
@@ -100,7 +102,7 @@ def add_voltage_source(voltage_name, voltage_value, first_node, second_node, cir
 
     print(circuit)
 
-    first_node_location, first_node_new = node_add(first_node)
+    first_node_location, first_node_new = node_add(second_node)
 
     # check the direction chosen is up
     if direction == 'Up':
@@ -128,7 +130,7 @@ def add_voltage_source(voltage_name, voltage_value, first_node, second_node, cir
 
     end_element = d.here
 
-    second_node_location, second_node_new = node_add(second_node)
+    second_node_location, second_node_new = node_add(first_node)
 
     if not second_node_new:
 
@@ -153,11 +155,11 @@ def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequenc
     if ac_type == 'Sinusoidal Voltage':
 
         # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-        if second_node == 'circuit.gnd':
+        if str(second_node).lower() in circuit_ground_options:
 
             circuit.SinusoidalVoltageSource(voltage_name, first_node, circuit.gnd, amplitude=float(voltage_value)@u_V, frequency=float(voltage_frequency)@u_Hz)
 
-        elif first_node == 'circuit.gnd':
+        elif str(first_node).lower() in circuit_ground_options:
 
             circuit.SinusoidalVoltageSource(voltage_name, circuit.gnd, second_node, amplitude=float(voltage_value)@u_V, frequency=float(voltage_frequency)@u_Hz)
 
@@ -172,11 +174,11 @@ def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequenc
                           ((1+0.0000001) / (2 * float(voltage_frequency))@u_s, 0), (1/float(voltage_frequency)@u_s, 0)]
 
         # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-        if second_node == 'circuit.gnd':
+        if str(second_node).lower() in circuit_ground_options:
 
             circuit.PieceWiseLinearVoltageSource(voltage_name, first_node, circuit.gnd, time_volt_vals, dc=float(voltage_value)@u_V)
 
-        elif first_node == 'circuit.gnd':
+        elif str(first_node).lower() in circuit_ground_options:
 
             circuit.PieceWiseLinearVoltageSource(voltage_name, circuit.gnd, second_node, time_volt_vals, dc=float(voltage_value)@u_V)
 
@@ -187,7 +189,7 @@ def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequenc
 
     print(circuit)
 
-    first_node_location, first_node_new = node_add(first_node)
+    first_node_location, first_node_new = node_add(second_node)
 
     # check the direction chosen is up
     if direction == 'Up':
@@ -215,7 +217,7 @@ def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequenc
 
     end_element = d.here
 
-    second_node_location, second_node_new = node_add(second_node)
+    second_node_location, second_node_new = node_add(first_node)
 
     if not second_node_new:
 
@@ -237,11 +239,11 @@ def add_resistor(resistor_name, resistor_value, first_node, second_node, circuit
     global output_circuit
 
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd':
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.R(resistor_name, first_node, circuit.gnd, float(resistor_value)@u_kOhm)
 
-    elif first_node == 'circuit.gnd':
+    elif str(first_node).lower() in circuit_ground_options:
 
         circuit.R(resistor_name, circuit.gnd, second_node, float(resistor_value)@u_kOhm)
 
@@ -302,11 +304,11 @@ def add_capacitor(capacitor_name, capacitor_value, first_node, second_node, circ
 
     global output_circuit
 
-    if second_node == 'circuit.gnd':
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.C(capacitor_name, first_node, circuit.gnd, float(capacitor_value)@u_uF)
 
-    elif first_node == 'circuit.gnd':
+    elif str(first_node).lower() in circuit_ground_options:
 
         circuit.C(capacitor_name, circuit.gnd, second_node, float(capacitor_value)@u_uF)
 
@@ -370,11 +372,11 @@ def add_inductor(inductor_name, inductor_value, first_node, second_node, circuit
     global output_circuit
 
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd':
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.L(inductor_name, first_node, circuit.gnd, float(inductor_value)@u_H)
 
-    elif first_node == 'circuit.gnd':
+    elif str(first_node).lower() in circuit_ground_options:
 
         circuit.L(inductor_name, circuit.gnd, second_node, float(inductor_value)@u_H)
 
@@ -439,11 +441,11 @@ def add_diode(diode_name, diode_model, first_node, second_node, circuit, directi
     global output_circuit
 
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd':
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.Diode(diode_name, first_node, circuit.gnd, model=diode_model)
 
-    elif first_node == 'circuit.gnd':
+    elif str(first_node).lower() in circuit_ground_options:
 
         circuit.Diode(diode_name, circuit.gnd, second_node, model=diode_model)
 
