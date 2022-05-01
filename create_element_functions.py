@@ -20,7 +20,8 @@ ac_voltage_options = ['Select AC Voltage Type',
 
 # create a list of diode models to be used in the diode model drop down menu
 diode_model_options = ['Select Diode Model',
-                       '1N4148PH']
+                       '1N4148PH',
+                       '1N4001GP']
 
 output_circuit = cec.output_circuit
 
