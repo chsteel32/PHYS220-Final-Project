@@ -79,3 +79,36 @@ def dc_sweep_simulator(circuit, vstart, vstop, vincr, analyzed_nodes):
         plt.show()
         plt.close()
 
+
+def ac_simulator(circuit, freqStart, freqStop, points, analyzed_nodes):
+
+    
+
+    simulator = circuit.simulator(temperature=25, nominal_temperature=25)
+
+    print(simulator)
+    
+    analysis = simulator.ac(start_frequency=int(freqStart)@u_Hz, stop_frequency=int(freqStop)@u_Hz, number_of_points=points,  variation='dec')
+
+    print('analysis =', analysis)
+    print('analysis nodes =', analyzed_nodes)
+
+    for node in analyzed_nodes:
+
+        print('We made it to', node)
+
+        if node == circuit.gnd or node == 'circuit.gnd':
+
+            node = '0'
+
+        plt.close()
+        plt.figure()
+        #plt.title('Voltage across Node {}'.format(node))
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Gain [dB]')
+        plt.grid()
+        freq = np.linspace(int(freqStart), int(freqStop), len(analysis[node].real))
+        plt.plot(freq, analysis[node].real)
+        plt.savefig('ac_analysis_{}.jpg'.format(node), dpi=600)
+        plt.show()
+        plt.close()
