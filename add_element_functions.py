@@ -438,21 +438,25 @@ def add_inductor(inductor_name, inductor_value, first_node, second_node, circuit
 # # tkinter_create_element_functions)
 def add_diode(diode_name, diode_model, first_node, second_node, circuit, direction, frame):
 
+    diode_models = {'1N4148PH': circuit.model('1N4148PH', 'D', IS=4.342@u_nA, RS=0.6458@u_Ohm, BV=110@u_V,
+                                              IBV=0.0001@u_V, N=1.906),
+                    '1N4001GP': circuit.model('1N4001GP', 'D', IS=29.5E-9@u_A, RS=73.5E-3@u_Ohm, BV=60@u_V, IBV=10@u_V, N=1.96)}
+
     global output_circuit
 
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
     if str(second_node).lower() in circuit_ground_options:
 
-        circuit.Diode(diode_name, first_node, circuit.gnd, model=diode_model)
+        circuit.Diode(diode_name, first_node, circuit.gnd, model=diode_models[diode_model])
 
     elif str(first_node).lower() in circuit_ground_options:
 
-        circuit.Diode(diode_name, circuit.gnd, second_node, model=diode_model)
+        circuit.Diode(diode_name, circuit.gnd, second_node, model=diode_models[diode_model])
 
     # otherwise, add the element with whatever user input values were received for both nodes
     else:
 
-        circuit.Diode(diode_name, first_node, second_node, model=diode_model)
+        circuit.Diode(diode_name, first_node, second_node, model=diode_models[diode_model])
 
     print(circuit)
 
