@@ -88,6 +88,10 @@ def create_simulator(simulator, circuit):
 
         sc.create_transient_simulator(circuit)
 
+    elif simulator == simulator_options[2]:
+
+        sc.create_dc_sweep_simulator(circuit)
+
 def reset():
     global start_circuit
 
@@ -149,7 +153,8 @@ circuit_elements = ['Select Element',
                     'Diode']
 
 simulator_options = ['Select Simulator',
-                     'Transient Analysis']
+                     'Transient Analysis',
+                     'DC Sweep']
 
 # create a tkinter variable to store the circuit element menu selection to be used when the create element button is
 # clicked

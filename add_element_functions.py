@@ -22,21 +22,21 @@ circuit_nodes = {}
 
 output_circuit = None
 
+# Resets the circuit and main pane
 def reset_circuit(frame):
     global output_circuit, circuit_nodes, d
+    
+    # deletes Objedcts
     del d
     del circuit_nodes
     del output_circuit
 
-    # A drawing on which to place the circuit elements for the circuit model
+    # resets variables
     d = schemdraw.Drawing(file='circuit.png')
-
-    # create a dictionary of circuit nodes to be used in creating the circuit diagram
     circuit_nodes = {}
-
     output_circuit = None
 
-
+    # destroys existing widgets
     for widget in frame.winfo_children():
         widget.destroy()
 

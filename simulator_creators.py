@@ -166,3 +166,144 @@ def create_transient_simulator(circuit):
 
     error_label = Label(transient_creator_window, text='')
     error_label.grid(column=1, row=6+counter, padx=2, pady=2)
+
+def create_dc_sweep_simulator(circuit):
+
+    node_check_boxes = {}
+    var_vals = {}
+
+    initial_conditions = {}
+    initial_conditions_variables = {}
+
+    def send_nodes(check_nodes, current_var_values):
+
+        analysis_node_list = []
+
+        print('current_var_vals:', current_var_values)
+
+        for current_node in current_var_values:
+
+            print(current_var_values[current_node].get())
+
+            if current_var_values[current_node].get():
+
+                print('analysis node =', current_node)
+
+                analysis_node_list.append(current_node)
+
+        return analysis_node_list
+
+    # # A function to check if all text input fields are filled properly
+    def check_fields(*args):
+
+        vstart = string_var1.get()
+        vstop = string_var2.get()
+        vincr = string_var3.get()
+
+        # check that all text fields are filled and there is no error generated
+        # if these conditions are met, enable the button to create the element
+        if vstart and vstop and vincr and not error_label['text']:
+            simulation_button.config(state=NORMAL)
+        # otherwise, the button remains disabled
+        else:
+            simulation_button.config(state=DISABLED)
+
+    def validate_input(*args):
+
+        try:
+            float(vstart_value.get())
+            float(vstop_value.get())
+            float(vincr_value.get())
+#            for current_node in initial_conditions:
+#               float(initial_conditions[current_node].get())
+            error_label.config(text='')
+        except ValueError:
+            error_label.config(text='Voltage Value must be a number!')
+
+    dc_creator_window = Toplevel()
+
+    Label(dc_creator_window, text='Simulator Type: ').grid(column=0, row=0, padx=20, pady=20)
+    Label(dc_creator_window, text='DC Sweep').grid(column=1, row=0, padx=20, pady=20)
+    Label(dc_creator_window, text='Start Voltage (V): ').grid(column=0, row=1, padx=20, pady=20)
+    Label(dc_creator_window, text=u'Stop Voltage (V): ').grid(column=0, row=2, padx=20, pady=20)
+    Label(dc_creator_window, text='Voltage Increments: ').grid(column=0, row=3, padx=20, pady=20)
+    Label(dc_creator_window, text='Nodes to Analyze: ').grid(column=0, row=4, padx=20, pady=20)
+
+    string_var1 = StringVar(dc_creator_window)
+    string_var2 = StringVar(dc_creator_window)
+    string_var3 = StringVar(dc_creator_window)
+
+    string_var1.trace('w', check_fields)
+    string_var2.trace('w', check_fields)
+    string_var3.trace('w', check_fields)
+
+    string_var1.trace('w', validate_input)
+    string_var2.trace('w', validate_input)
+    string_var3.trace('w', validate_input)
+
+    vstart_value = Entry(dc_creator_window, width=10, textvariable=string_var1)
+    vstart_value.grid(column=1, row=1)
+
+    vstop_value = Entry(dc_creator_window, width=10, textvariable=string_var2)
+    vstop_value.grid(column=1, row=2)
+
+    vincr_value = Entry(dc_creator_window, width=10, textvariable=string_var3)
+    vincr_value.grid(column=1, row=3)
+
+    counter = 0
+
+    for node in aef.circuit_nodes:
+
+        current_var = IntVar()
+
+        var_vals[node] = current_var
+
+        if str(node).lower() in circuit_ground_options:
+
+            pass
+
+        else:
+
+            current_check = Checkbutton(dc_creator_window, text='{}'.format(node), variable=current_var,
+                                    justify=LEFT)
+
+            current_check.grid(column=1, row=4+counter)
+            current_check.grid_propagate(False)
+
+            node_check_boxes[node] = current_check
+
+            counter += 1
+    '''
+    Label(transient_creator_window, text='Initial Conditions: ').grid(column=0, row=4+counter)
+
+    for node in aef.circuit_nodes:
+
+        string_var = create_string_var(transient_creator_window, check_fields, validate_input)
+
+        initial_conditions_variables[node] = string_var
+
+        if str(node).lower() in circuit_ground_options:
+
+            pass
+
+        else:
+
+            Label(transient_creator_window, text=node).grid(column=0, row=5+counter)
+            initial_condition = Entry(transient_creator_window, width=5, textvariable=string_var)
+
+            initial_condition.grid(column=1, row=5+counter)
+            initial_condition.grid_propagate(False)
+
+            initial_conditions[node] = initial_condition
+
+            counter += 1
+    '''
+    simulation_button = Button(dc_creator_window, text='Start Simulation', command=lambda: [sf.dc_sweep_simulator(circuit, vstart_value.get(),
+                                                                       vstop_value.get(), vincr_value.get(),
+                                                                       send_nodes(node_check_boxes, var_vals)),
+                                                                       dc_creator_window.destroy()], state=DISABLED)
+    simulation_button.grid(column=1, row=5+counter)
+
+    error_label = Label(dc_creator_window, text='')
+    error_label.grid(column=1, row=6+counter, padx=2, pady=2)
+
