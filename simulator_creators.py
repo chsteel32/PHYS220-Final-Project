@@ -8,8 +8,8 @@ circuit_ground_options = ['circuit.gnd', 'ground', 'g', 'gr', '0']
 def create_string_var(current_window, trace_function_1, trace_function_2):
 
     string_var = StringVar(current_window)
-    string_var.trace('w', trace_function_1)
     string_var.trace('w', trace_function_2)
+    string_var.trace('w', trace_function_1)
 
     return string_var
 
@@ -76,7 +76,7 @@ def create_transient_simulator(circuit):
                 float(initial_conditions[current_node].get())
             error_label.config(text='')
         except ValueError:
-            error_label.config(text='Voltage Value must be a number!')
+            error_label.config(text='Number Required')
 
     transient_creator_window = Toplevel()
 
@@ -132,7 +132,7 @@ def create_transient_simulator(circuit):
 
             counter += 1
 
-    Label(transient_creator_window, text='Initial Conditions: ').grid(column=0, row=4+counter)
+    Label(transient_creator_window, text='Initial Conditions (Voltage across Node): ').grid(column=0, row=4+counter)
 
     for node in aef.circuit_nodes:
 
