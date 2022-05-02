@@ -12,11 +12,15 @@ import PySpice.Logging.Logging as Logging
 from PySpice.Spice.Netlist import Circuit, SubCircuit
 from PySpice.Unit import *
 
+circuit_ground_options = ['circuit.gnd', 'ground', 'g', 'gr', '0']
+
 # A drawing on which to place the circuit elements for the circuit model
 d = schemdraw.Drawing(file='circuit.png')
 
-# create a list of circuit nodes to be used in creating the circuit diagram
-circuit_nodes = []
+# create a dictionary of circuit nodes to be used in creating the circuit diagram
+circuit_nodes = {}
+
+output_circuit = None
 
 
 # # A function to show the circuit model: requires the circuit_model_frame as an argument
@@ -53,27 +57,43 @@ def node_add(node):
 
             d.add(elm.Dot().label(str(node)))
 
+            circuit_nodes[node] = d.here
+
+            return d.here, True
+
         elif node == 'circuit.gnd':
 
             d.add(elm.Ground())
 
+            circuit_nodes[node] = d.here
+
+            return d.here, True
+
     elif node in circuit_nodes:
 
-        print('previous node')
+        for previous_node in circuit_nodes:
 
-        for i in range(len(circuit_nodes)):
+            if previous_node == node:
 
-            print(d.elements[i]['label'])
+                d.here = circuit_nodes[previous_node]
+
+                return d.here, False
 
 
 # # A function to add a voltage source to the given circuit (uses information from create_voltage_source() in
 # # tkinter_create_element_functions)
 def add_voltage_source(voltage_name, voltage_value, first_node, second_node, circuit, direction, frame):
 
+    global output_circuit
+
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.V(voltage_name, first_node, circuit.gnd, float(voltage_value)@u_V)
+
+    elif str(first_node).lower() in circuit_ground_options:
+
+        circuit.V(voltage_name, circuit.gnd, second_node, float(voltage_value) @ u_V)
 
     # otherwise, add the element with whatever user input values were received for both nodes
     else:
@@ -82,38 +102,132 @@ def add_voltage_source(voltage_name, voltage_value, first_node, second_node, cir
 
     print(circuit)
 
+    first_node_location, first_node_new = node_add(second_node)
+
     # check the direction chosen is up
     if direction == 'Up':
 
-        node_add(first_node)
-
         # use the schemdraw builtin function add to add the voltage source to the circuit model
-        d.add(elm.SourceV().up().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
-
-        node_add(second_node)
+        d.add(elm.SourceV().at(first_node_location).up().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
 
     # check the direction chosen is down
     elif direction == 'Down':
 
         # use the schemdraw builtin function add to add the voltage source to the circuit model
-        d.add(elm.SourceV().down().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
+        d.add(elm.SourceV().at(first_node_location).down().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
 
     # check the direction chosen is left
     elif direction == 'Left':
 
         # use the schemdraw builtin function add to add the voltage source to the circuit model
-        d.add(elm.SourceV().left().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
+        d.add(elm.SourceV().at(first_node_location).left().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
 
     # check the direction chosen is right
     elif direction == 'Right':
 
         # use the schemdraw builtin function add to add the voltage source to the circuit model
-        d.add(elm.SourceV().right().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
+        d.add(elm.SourceV().at(first_node_location).right().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
+
+    end_element = d.here
+
+    second_node_location, second_node_new = node_add(first_node)
+
+    if not second_node_new:
+
+        d.add(elm.Wire('|-').at(end_element).to(second_node_location))
 
     d.save('circuit.png')
 
     # run the function show_circuit() to display the circuit model in the circuit model frame
     show_circuit(frame)
+
+    output_circuit = circuit
+
+    return circuit
+
+
+# # A function to add a voltage source to the given circuit (uses information from create_voltage_source() in
+# # tkinter_create_element_functions)
+def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequency, first_node, second_node, circuit, direction, frame):
+
+    global output_circuit
+
+    if ac_type == 'Sinusoidal Voltage':
+
+        # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
+        if str(second_node).lower() in circuit_ground_options:
+
+            circuit.SinusoidalVoltageSource(voltage_name, first_node, circuit.gnd, amplitude=float(voltage_value)@u_V, frequency=float(voltage_frequency)@u_Hz)
+
+        elif str(first_node).lower() in circuit_ground_options:
+
+            circuit.SinusoidalVoltageSource(voltage_name, circuit.gnd, second_node, amplitude=float(voltage_value)@u_V, frequency=float(voltage_frequency)@u_Hz)
+
+        # otherwise, add the element with whatever user input values were received for both nodes
+        else:
+
+            circuit.SinusoidalVoltageSource(voltage_name, first_node, second_node, amplitude=float(voltage_value)@u_V, frequency=float(voltage_frequency)@u_Hz)
+
+    elif ac_type == 'Step Voltage':
+
+        time_volt_vals = [(0, float(voltage_value)@u_V), (1 / (2 * float(voltage_frequency))@u_s, float(voltage_value)@u_V),
+                          ((1+0.0000001) / (2 * float(voltage_frequency))@u_s, 0), (1/float(voltage_frequency)@u_s, 0)]
+
+        # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
+        if str(second_node).lower() in circuit_ground_options:
+
+            circuit.PieceWiseLinearVoltageSource(voltage_name, first_node, circuit.gnd, time_volt_vals, dc=float(voltage_value)@u_V)
+
+        elif str(first_node).lower() in circuit_ground_options:
+
+            circuit.PieceWiseLinearVoltageSource(voltage_name, circuit.gnd, second_node, time_volt_vals, dc=float(voltage_value)@u_V)
+
+        # otherwise, add the element with whatever user input values were received for both nodes
+        else:
+
+            circuit.PieceWiseLinearVoltageSource(voltage_name, first_node, second_node, time_volt_vals)
+
+    print(circuit)
+
+    first_node_location, first_node_new = node_add(second_node)
+
+    # check the direction chosen is up
+    if direction == 'Up':
+
+        # use the schemdraw builtin function add to add the voltage source to the circuit model
+        d.add(elm.SourceControlledV().at(first_node_location).up().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
+
+    # check the direction chosen is down
+    elif direction == 'Down':
+
+        # use the schemdraw builtin function add to add the voltage source to the circuit model
+        d.add(elm.SourceControlledV().at(first_node_location).down().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
+
+    # check the direction chosen is left
+    elif direction == 'Left':
+
+        # use the schemdraw builtin function add to add the voltage source to the circuit model
+        d.add(elm.SourceControlledV().at(first_node_location).left().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
+
+    # check the direction chosen is right
+    elif direction == 'Right':
+
+        # use the schemdraw builtin function add to add the voltage source to the circuit model
+        d.add(elm.SourceControlledV().at(first_node_location).right().label('V' + voltage_name + ' ' + str(voltage_value) + 'V'))
+
+    end_element = d.here
+
+    second_node_location, second_node_new = node_add(first_node)
+
+    if not second_node_new:
+
+        d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    d.save('circuit.png')
+    # run the function show_circuit() to display the circuit model in the circuit model frame
+    show_circuit(frame)
+
+    output_circuit = circuit
 
     return circuit
 
@@ -122,10 +236,16 @@ def add_voltage_source(voltage_name, voltage_value, first_node, second_node, cir
 # # tkinter_create_element_functions)
 def add_resistor(resistor_name, resistor_value, first_node, second_node, circuit, direction, frame):
 
+    global output_circuit
+
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.R(resistor_name, first_node, circuit.gnd, float(resistor_value)@u_kOhm)
+
+    elif str(first_node).lower() in circuit_ground_options:
+
+        circuit.R(resistor_name, circuit.gnd, second_node, float(resistor_value)@u_kOhm)
 
     # otherwise, add the element with whatever user input values were received for both nodes
     else:
@@ -134,6 +254,47 @@ def add_resistor(resistor_name, resistor_value, first_node, second_node, circuit
 
     print(circuit)
 
+    first_node_location, first_node_new = node_add(first_node)
+
+    # check the direction chosen is up
+    if direction == 'Up':
+
+        # use the schemdraw builtin function add to add the resistor  to the circuit model
+        d.add(elm.Resistor().at(first_node_location).up().label('R' + resistor_name + ' ' + str(resistor_value) + r'$k\Omega$'))
+
+    # check the direction chosen is down
+    elif direction == 'Down':
+
+        # use the schemdraw builtin function add to add the resistor  to the circuit model
+        d.add(elm.Resistor().at(first_node_location).down().label('R' + resistor_name + ' ' + str(resistor_value) + r'$k\Omega$'))
+
+    # check the direction chosen is left
+    elif direction == 'Left':
+
+        # use the schemdraw builtin function add to add the resistor  to the circuit model
+        d.add(elm.Resistor().at(first_node_location).left().label('R' + resistor_name + ' ' + str(resistor_value) + r'$k\Omega$'))
+
+    # check the direction chosen is right
+    elif direction == 'Right':
+
+        # use the schemdraw builtin function add to add the resistor  to the circuit model
+        d.add(elm.Resistor().at(first_node_location).right().label('R' + resistor_name + ' ' + str(resistor_value) + r'$k\Omega$'))
+
+    end_element = d.here
+
+    second_node_location, second_node_new = node_add(second_node)
+
+    if not second_node_new:
+
+        d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    d.save('circuit.png')
+
+    # run the function show_circuit() to display the circuit model in the circuit model frame
+    show_circuit(frame)
+
+    output_circuit = circuit
+
     return circuit
 
 
@@ -141,15 +302,65 @@ def add_resistor(resistor_name, resistor_value, first_node, second_node, circuit
 # # tkinter_create_element_functions)
 def add_capacitor(capacitor_name, capacitor_value, first_node, second_node, circuit, direction, frame):
 
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    global output_circuit
+
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.C(capacitor_name, first_node, circuit.gnd, float(capacitor_value)@u_uF)
+
+    elif str(first_node).lower() in circuit_ground_options:
+
+        circuit.C(capacitor_name, circuit.gnd, second_node, float(capacitor_value)@u_uF)
 
     else:
 
         circuit.C(capacitor_name, first_node, second_node, float(capacitor_value)@u_uF)
 
     print(circuit)
+
+    first_node_location, first_node_new = node_add(first_node)
+
+    # check the direction chosen is up
+    if direction == 'Up':
+
+        # use the schemdraw builtin function add to add the capacitor  to the circuit model
+        d.add(elm.Capacitor().at(first_node_location).up().label(
+            'C' + capacitor_name + ' ' + str(capacitor_value) + r'$\mu$F'))
+
+    # check the direction chosen is down
+    elif direction == 'Down':
+
+        # use the schemdraw builtin function add to add the capacitor  to the circuit model
+        d.add(elm.Capacitor().at(first_node_location).down().label(
+            'C' + capacitor_name + ' ' + str(capacitor_value) + r'$\mu$F'))
+
+    # check the direction chosen is left
+    elif direction == 'Left':
+
+        # use the schemdraw builtin function add to add the capacitor  to the circuit model
+        d.add(elm.Capacitor().at(first_node_location).left().label(
+            'C' + capacitor_name + ' ' + str(capacitor_value) + r'$\mu$F'))
+
+    # check the direction chosen is right
+    elif direction == 'Right':
+
+        # use the schemdraw builtin function add to add the capacitor  to the circuit model
+        d.add(elm.Capacitor().at(first_node_location).right().label(
+            'C' + capacitor_name + ' ' + str(capacitor_value) + r'$\mu$F'))
+
+    end_element = d.here
+
+    second_node_location, second_node_new = node_add(second_node)
+
+    if not second_node_new:
+        d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    d.save('circuit.png')
+
+    # run the function show_circuit() to display the circuit model in the circuit model frame
+    show_circuit(frame)
+
+    output_circuit = circuit
 
     return circuit
 
@@ -158,10 +369,16 @@ def add_capacitor(capacitor_name, capacitor_value, first_node, second_node, circ
 # # tkinter_create_element_functions)
 def add_inductor(inductor_name, inductor_value, first_node, second_node, circuit, direction, frame):
 
+    global output_circuit
+
     # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
-    if second_node == 'circuit.gnd' or first_node == 'circuit.gnd':
+    if str(second_node).lower() in circuit_ground_options:
 
         circuit.L(inductor_name, first_node, circuit.gnd, float(inductor_value)@u_H)
+
+    elif str(first_node).lower() in circuit_ground_options:
+
+        circuit.L(inductor_name, circuit.gnd, second_node, float(inductor_value)@u_H)
 
     # otherwise, add the element with whatever user input values were received for both nodes
     else:
@@ -170,18 +387,115 @@ def add_inductor(inductor_name, inductor_value, first_node, second_node, circuit
 
     print(circuit)
 
+    first_node_location, first_node_new = node_add(first_node)
+
+    # check the direction chosen is up
+    if direction == 'Up':
+
+        # use the schemdraw builtin function add to add the inductor  to the circuit model
+        d.add(elm.Inductor().at(first_node_location).up().label(
+            'L' + inductor_name + ' ' + str(inductor_value) + r'H'))
+
+    # check the direction chosen is down
+    elif direction == 'Down':
+
+        # use the schemdraw builtin function add to add the inductor  to the circuit model
+        d.add(elm.Inductor().at(first_node_location).down().label(
+            'L' + inductor_name + ' ' + str(inductor_value) + r'H'))
+
+    # check the direction chosen is left
+    elif direction == 'Left':
+
+        # use the schemdraw builtin function add to add the inductor  to the circuit model
+        d.add(elm.Inductor().at(first_node_location).left().label(
+            'L' + inductor_name + ' ' + str(inductor_value) + r'H'))
+
+    # check the direction chosen is right
+    elif direction == 'Right':
+
+        # use the schemdraw builtin function add to add the inductor  to the circuit model
+        d.add(elm.Inductor().at(first_node_location).right().label(
+            'L' + inductor_name + ' ' + str(inductor_value) + r'H'))
+
+    end_element = d.here
+
+    second_node_location, second_node_new = node_add(second_node)
+
+    if not second_node_new:
+        d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    d.save('circuit.png')
+
+    # run the function show_circuit() to display the circuit model in the circuit model frame
+    show_circuit(frame)
+
+    output_circuit = circuit
+
     return circuit
 
 
 # # A function to add a diode to the given circuit (uses information from create_voltage_source() in
 # # tkinter_create_element_functions)
-def add_diode(diode_name, diode_model, first_node, second_node, circuit, frame):
+def add_diode(diode_name, diode_model, first_node, second_node, circuit, direction, frame):
 
-    return diode_model
+    diode_models = {'1N4148PH': circuit.model('1N4148PH', 'D', IS=4.342@u_nA, RS=0.6458@u_Ohm, BV=110@u_V,
+                                              IBV=0.0001@u_V, N=1.906),
+                    '1N4001GP': circuit.model('1N4001GP', 'D', IS=29.5E-9@u_A, RS=73.5E-3@u_Ohm, BV=60@u_V, IBV=10@u_V, N=1.96)}
 
+    global output_circuit
 
-# # A function to add a switch to the given circuit (uses information from create_voltage_source() in
-# # tkinter_create_element_functions)
-def add_switch(switch_name, starting_position, first_node, second_node, circuit, direction, frame):
+    # check if either node was set equal to the ground - if so, use the proper PySpice ground syntax for the node
+    if str(second_node).lower() in circuit_ground_options:
 
-    return starting_position
+        circuit.Diode(diode_name, first_node, circuit.gnd, model=diode_models[diode_model])
+
+    elif str(first_node).lower() in circuit_ground_options:
+
+        circuit.Diode(diode_name, circuit.gnd, second_node, model=diode_models[diode_model])
+
+    # otherwise, add the element with whatever user input values were received for both nodes
+    else:
+
+        circuit.Diode(diode_name, first_node, second_node, model=diode_models[diode_model])
+
+    print(circuit)
+
+    first_node_location, first_node_new = node_add(first_node)
+
+    # check the direction chosen is up
+    if direction == 'Up':
+
+        # use the schemdraw builtin function add to add the inductor  to the circuit model
+        d.add(elm.Diode().at(first_node_location).up().label('D' + diode_name))
+
+    # check the direction chosen is down
+    elif direction == 'Down':
+
+        # use the schemdraw builtin function add to add the inductor  to the circuit model
+        d.add(elm.Diode().at(first_node_location).down().label('D' + diode_name))
+
+    # check the direction chosen is left
+    elif direction == 'Left':
+
+        # use the schemdraw builtin function add to add the inductor  to the circuit model
+        d.add(elm.Diode().at(first_node_location).left().label('D' + diode_name))
+
+    # check the direction chosen is right
+    elif direction == 'Right':
+
+        # use the schemdraw builtin function add to add the inductor  to the circuit model
+        d.add(elm.Diode().at(first_node_location).right().label('D' + diode_name))
+
+    end_element = d.here
+
+    second_node_location, second_node_new = node_add(second_node)
+
+    if not second_node_new:
+        d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    d.save('circuit.png')
+
+    # run the function show_circuit() to display the circuit model in the circuit model frame
+    show_circuit(frame)
+
+    output_circuit = circuit
