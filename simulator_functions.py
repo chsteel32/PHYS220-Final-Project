@@ -4,6 +4,7 @@ from PySpice.Spice.Netlist import Circuit
 from PySpice.Unit import *
 import os
 import numpy as np
+import PySpice.Plot.BodeDiagram as bd
 
 # os.environ['path'] += os.pathsep + r"D:\\Users\\chste\\Downloads\\ngspice-36_dll_64\\Spice64_dll\\dll-vs"
 
@@ -103,12 +104,14 @@ def ac_simulator(circuit, freqStart, freqStop, points, analyzed_nodes):
 
         plt.close()
         plt.figure()
+        fig,axes = plt.subplots(2,figsize=(20,10))
         #plt.title('Voltage across Node {}'.format(node))
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Gain [dB]')
         plt.grid()
-        freq = np.linspace(int(freqStart), int(freqStop), len(analysis[node].real))
-        plt.plot(freq, analysis[node].real)
+        
+        bd.bode_diagram(axes=axes, frequency=analysis.frequency,gain=20*np.log10(np.absolute(analysis[node])),phase=np.angle(analysis[node],deg=False))
+        
         plt.savefig('ac_analysis_{}.jpg'.format(node), dpi=600)
         plt.show()
         plt.close()
