@@ -123,7 +123,7 @@ def create_transient_simulator(circuit):
         else:
 
             current_check = Checkbutton(transient_creator_window, text='{}'.format(node), variable=current_var,
-                                    justify=LEFT)
+                                        justify=LEFT)
 
             current_check.grid(column=1, row=4+counter)
             current_check.grid_propagate(False)
