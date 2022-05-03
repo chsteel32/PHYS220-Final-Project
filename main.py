@@ -20,12 +20,15 @@ Elements to be added
 from tkinter import *
 from PIL import ImageTk, Image
 import create_element_functions as ce
+import add_element_functions as ae
 import simulator_functions as sf
 import simulator_creators as sc
 import PySpice.Logging.Logging as Logging
 import matplotlib.pyplot as plt
 from PySpice.Spice.Netlist import Circuit
 from PySpice.Unit import *
+
+import os
 
 start_circuit = Circuit('COMPHYSPICE CIRCUIT')
 
@@ -85,6 +88,32 @@ def create_simulator(simulator, circuit):
 
         sc.create_transient_simulator(circuit)
 
+    elif simulator == simulator_options[2]:
+
+        sc.create_dc_sweep_simulator(circuit)
+
+    elif simulator == simulator_options[3]:
+
+        sc.create_ac_simulator(circuit)
+
+def reset():
+    global start_circuit
+
+    try:
+        os.remove("circuit.png")
+        print('-----------------')
+        
+        ae.reset_circuit(circuit_model_frame)
+        del start_circuit
+        start_circuit = Circuit('COMPHYSPICE CIRCUIT')
+        del ce.output_circuit
+        ce.output_circuit = ae.output_circuit
+        print(start_circuit)
+        
+        print('-----------------')
+    except FileNotFoundError:
+        pass
+    return 
 
 ########################################################################################################################
 # #                                                  MAIN PROCESSES                                                  # #
@@ -128,7 +157,9 @@ circuit_elements = ['Select Element',
                     'Diode']
 
 simulator_options = ['Select Simulator',
-                     'Transient Analysis']
+                     'Transient Analysis',
+                     'DC Sweep',
+                     'AC Analysis']
 
 # create a tkinter variable to store the circuit element menu selection to be used when the create element button is
 # clicked
@@ -151,6 +182,9 @@ Button(menu_frame, text='Create Element', command=lambda: [create_element(select
 
 Button(menu_frame, text='Run Simulation', command=lambda: [create_simulator(selected_simulator.get(), ce.output_circuit)]).grid(
     column=1, row=1, padx=10, pady=10)
+
+Button(menu_frame, text='Reset', command=lambda: [reset()]).grid(
+    column=2, row=1, padx=10, pady=10)
 
 # run the main loop of the root window
 root.mainloop()

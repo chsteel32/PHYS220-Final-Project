@@ -22,6 +22,23 @@ circuit_nodes = {}
 
 output_circuit = None
 
+# Resets the circuit and main pane
+def reset_circuit(frame):
+    global output_circuit, circuit_nodes, d
+    
+    # deletes Objedcts
+    del d
+    del circuit_nodes
+    del output_circuit
+
+    # resets variables
+    d = schemdraw.Drawing(file='circuit.png')
+    circuit_nodes = {}
+    output_circuit = None
+
+    # destroys existing widgets
+    for widget in frame.winfo_children():
+        widget.destroy()
 
 # # A function to show the circuit model: requires the circuit_model_frame as an argument
 def show_circuit(frame):

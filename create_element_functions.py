@@ -25,7 +25,6 @@ diode_model_options = ['Select Diode Model',
 
 output_circuit = cec.output_circuit
 
-
 # # A function used to create a voltage source for a given circuit and a given frame for displaying the circuit
 def create_voltage_source(circuit, frame):
 
