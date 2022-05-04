@@ -132,9 +132,11 @@ def add_voltage_source(voltage_name, voltage_value, first_node, second_node, cir
 
     second_node_location, second_node_new = node_add(first_node)
 
-    if not second_node_new:
-
+    if not second_node_new and direction != 'Up' and direction != 'Down':
         d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    elif not second_node_new:
+        d.add(elm.Wire('-|').at(end_element).to(second_node_location))
 
     d.save('circuit.png')
 
@@ -219,9 +221,11 @@ def add_ac_voltage_source(voltage_name, ac_type, voltage_value, voltage_frequenc
 
     second_node_location, second_node_new = node_add(first_node)
 
-    if not second_node_new:
-
+    if not second_node_new and direction != 'Up' and direction != 'Down':
         d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    elif not second_node_new:
+        d.add(elm.Wire('-|').at(end_element).to(second_node_location))
 
     d.save('circuit.png')
     # run the function show_circuit() to display the circuit model in the circuit model frame
@@ -284,9 +288,11 @@ def add_resistor(resistor_name, resistor_value, first_node, second_node, circuit
 
     second_node_location, second_node_new = node_add(second_node)
 
-    if not second_node_new:
-
+    if not second_node_new and direction != 'Up' and direction != 'Down':
         d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    elif not second_node_new:
+        d.add(elm.Wire('-|').at(end_element).to(second_node_location))
 
     d.save('circuit.png')
 
@@ -352,8 +358,11 @@ def add_capacitor(capacitor_name, capacitor_value, first_node, second_node, circ
 
     second_node_location, second_node_new = node_add(second_node)
 
-    if not second_node_new:
+    if not second_node_new and direction != 'Up' and direction != 'Down':
         d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    elif not second_node_new:
+        d.add(elm.Wire('-|').at(end_element).to(second_node_location))
 
     d.save('circuit.png')
 
@@ -421,8 +430,11 @@ def add_inductor(inductor_name, inductor_value, first_node, second_node, circuit
 
     second_node_location, second_node_new = node_add(second_node)
 
-    if not second_node_new:
+    if not second_node_new and direction != 'Up' and direction != 'Down':
         d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    elif not second_node_new:
+        d.add(elm.Wire('-|').at(end_element).to(second_node_location))
 
     d.save('circuit.png')
 
@@ -490,8 +502,11 @@ def add_diode(diode_name, diode_model, first_node, second_node, circuit, directi
 
     second_node_location, second_node_new = node_add(second_node)
 
-    if not second_node_new:
+    if not second_node_new and direction != 'Up' and direction != 'Down':
         d.add(elm.Wire('|-').at(end_element).to(second_node_location))
+
+    elif not second_node_new:
+        d.add(elm.Wire('-|').at(end_element).to(second_node_location))
 
     d.save('circuit.png')
 
