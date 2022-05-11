@@ -96,6 +96,10 @@ def create_simulator(simulator, circuit):
 
         sc.create_ac_simulator(circuit)
 
+    elif simulator == simulator_options[4]:
+
+        sc.create_chaotic_simulator(circuit)
+
 def reset():
     global start_circuit
 
@@ -159,7 +163,8 @@ circuit_elements = ['Select Element',
 simulator_options = ['Select Simulator',
                      'Transient Analysis',
                      'DC Sweep',
-                     'AC Analysis']
+                     'AC Analysis',
+                     'Transient-Chaotic']
 
 # create a tkinter variable to store the circuit element menu selection to be used when the create element button is
 # clicked
