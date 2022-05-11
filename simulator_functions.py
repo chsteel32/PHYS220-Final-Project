@@ -156,13 +156,39 @@ def chaotic_simulator(circuit, start_time, step_time, end_time, analyzed_nodes, 
         plt.show()
         plt.close()
 
+    start_node = circuit.gnd
+    end_node = circuit.gnd
+    input_node = circuit.gnd
+
+    for name in circuit.element_names:
+
+        if name[0] == 'C' or name[0] == 'D':
+
+            print('element name: {}'.format(name))
+
+            nodes = circuit[name].nodes
+
+            start_node = nodes[0]
+            end_node = nodes[1]
+        elif name[0] == 'V':
+
+            print('voltage name: {}'.format(name))
+
+            nodes = circuit[name].nodes
+
+            for node in nodes:
+
+                if str(node) != '0':
+
+                    input_node = node
+
     plt.close()
     plt.figure()
     plt.title('Voltage across diode')
     plt.xlabel('Time [s]')
     plt.ylabel('Voltage [V]')
     plt.grid()
-    plt.plot(analysis.time, (analysis['n2']-analysis['n3']))
+    plt.plot(analysis.time, (analysis[str(start_node)]-analysis[str(end_node)]))
     plt.savefig('chaotic_analysis_diode.jpg', dpi=600)
     plt.show()
     plt.close()
@@ -173,7 +199,7 @@ def chaotic_simulator(circuit, start_time, step_time, end_time, analyzed_nodes, 
     plt.xlabel('V Diode')
     plt.ylabel('V input')
     plt.grid()
-    plt.plot((analysis['n2']-analysis['n3']), analysis['n1'], lw='0.5')
+    plt.plot((analysis[str(start_node)]-analysis[str(end_node)]), analysis[str(input_node)], lw='0.5')
     plt.savefig('chaotic_analysis_phase.jpg', dpi=600)
     plt.show()
     plt.close()
